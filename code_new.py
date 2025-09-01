@@ -1,6 +1,4 @@
 #%% Load data
-from os import stat_result
-
 import numpy as np
 import matplotlib.dates as mdates
 from datetime import datetime, date
@@ -10,9 +8,9 @@ import matplotlib.pyplot as plt
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
 
-show_plots = "00000" # 5 plots not shown but saved
+show_plots = "0100000111100" # 5 plots not shown but saved
 
-def load_csv2np(fname)->tuple[np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
+def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
     # Load the CSV file, skipping the header and using comma as delimiter
     data = np.genfromtxt(fname=fname, delimiter=',', skip_header=1, dtype=str)
     # %% generate a time axis from the first column, the time is given in the format: HH:MM:SS
@@ -82,8 +80,10 @@ time_stamps[-1] = time_dt[-1]
 # As a verification, we plot the time stamps onto a plot where we also plot the black body temperature
 plt.figure(figsize=(10, 6))
 plt.plot(time_dt, bb_temp_K, label='Black Body Temperature (K)', color='blue')
+# this breaks
 for ts in time_stamps:
     plt.axvline(ts, color='red', linestyle='--', label=f'Time Stamp: {ts.strftime("%H:%M:%S")}')
+
 plt.xlabel('Zeit (HH:MM:SS)')
 plt.ylabel('Schwarzkörper-Temperatur (K)')
 #plt.title('Black Body Temperature with Time Stamps')
@@ -150,19 +150,19 @@ print("T_Umgebung")
 print(stdata.iwalls.avg)
 
 # Verlustleistung
-delta_T = stdata.bb.avg - stdata.iwalls.avg # np.array
+delta_T = stdata.bb.avg - stdata.iwalls.avg # gives np.array
 
 pv_factor = np.float64(
-            6 * 390 * (0.14e-3) ** 2 * np.pi / 16e-3 +
-            2 * 69.9 * (0.13e-3) ** 2 * np.pi / 20e-3 +
-            1 * 29.7 * (0.10e-3) ** 2 * np.pi / 30e-3 +
-            1 * 19.2 * (0.10e-3) ** 2 * np.pi / 30e-3 )
+            6 * 390 * 0.14e-3 ** 2 * np.pi / 16e-3 +
+            2 * 69.9 *0.13e-3 ** 2 * np.pi / 20e-3 +
+            1 * 29.7 *0.10e-3 ** 2 * np.pi / 30e-3 +
+            1 * 19.2 *0.10e-3 ** 2 * np.pi / 30e-3 )
 
 P_loss = pv_factor * delta_T
 P_eff = voltages * currents - P_loss
 radiated_power = P_eff / (epsilon * A_hp)
 # Temperatur-Differenz
-temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # np.array
+temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # ** gives np.array
 # Fehlerrechnung
 PV_error = pv_factor * delta_T + 0.5874 * L_error * delta_T
 P_eff_error = np.abs(voltages) * curr_error + PV_error
