@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
 
-show_plots = "0100000111100" # 5 plots not shown but saved
+show_plots = "001111100000111100" # 5 plots not shown but saved
 
 def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
     # Load the CSV file, skipping the header and using comma as delimiter
@@ -160,27 +160,37 @@ pv_factor = np.float64(
 
 P_loss = pv_factor * delta_T
 P_eff = voltages * currents - P_loss
+
 radiated_power = P_eff / (epsilon * A_hp)
 # Temperatur-Differenz
 temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # ** gives np.array
 # Fehlerrechnung
-PV_error = pv_factor * delta_T + 0.5874 * L_error * delta_T
-P_eff_error = np.abs(voltages) * curr_error + PV_error
-error_radiated_power = P_eff_error / (epsilon * A_hp)
+
 # Fehler von T^4 Differenz (systematisch)
-errors_temp4diff = np.sqrt(
-4 * (np.abs(stdata.bb.avg ** 3) * t_error + np.abs(stdata.iwalls.avg ** 3) * t_error))
+#errors_temp4diff = np.sqrt(
+#4 * (np.abs(stdata.bb.avg ** 3) * t_error + np.abs(stdata.iwalls.avg ** 3) * t_error))
 # Fehler von T^4 Differenz (statistisch)
-error_temp4_diff_stat = 4 * np.array(stdata.bb.avg ** 3) * stdata.bb.stderr + 4 * stdata.iwalls.avg ** 3 * stdata.iwalls.stderr
+#error_temp4_diff_stat = 4 * np.array(stdata.bb.avg ** 3) * stdata.bb.stderr + 4 * stdata.iwalls.avg ** 3 * stdata.iwalls.stderr
+
+
 # Stefan-Boltzmann-Konstante berechnen
 sigma_calc = radiated_power / temp4_diff
 # Systematischer Fehler von
-sigma_error = (1 / (epsilon * A_hp)) * (
-np.abs(1 / temp4_diff) * P_eff_error +
-np.abs(P_eff / temp4_diff**2) * errors_temp4diff
-)
+
+nenner=(stdata.bb.avg**4 - stdata.iwalls.avg**4)
+
+err_sys = np.abs(1/A_hp/epsilon)/nenner * (
+    0.01 *np.abs(currents) + (
+    0.05 *np.abs(voltages)) + (
+    0.4 *np.abs(stdata.bb.avg**3 * P_eff/ nenner)) + (
+    0.4 * np.abs(stdata.iwalls.avg**3 *P_eff / nenner)))
+
 # Statistischer Fehler von
-sigma_stat_error = np.abs(sigma_calc / temp4_diff) * error_temp4_diff_stat
+err_stat = np.sqrt(stdata.bb.std**2 *stdata.bb.avg**6 + stdata.iwalls.std**2 *stdata.iwalls.avg**6
+                   ) * np.abs(4* P_eff)/A_hp/epsilon/(stdata.bb.avg**4 - stdata.iwalls.avg**4)**2
+#sigma_stat_error = np.abs(sigma_calc / temp4_diff) * error_temp4_diff_stat
+sigma_error =err_sys
+sigma_stat_error = err_stat
 print("sigma")
 print(sigma_calc)
 print("sigma_sys")
