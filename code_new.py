@@ -4,6 +4,10 @@ import matplotlib.dates as mdates
 from datetime import datetime, date
 import matplotlib.pyplot as plt
 
+from code_old import P_eff_error
+from code_old import errors_temp4diff
+from code_old import error_temp4_diff_stat
+
 # Import the data from the May21YA csv file
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
@@ -205,6 +209,7 @@ epsilon_error = (
 (np.abs(1 / temp4_diff) * P_eff_error +
 np.abs(P_eff / temp4_diff**2) * errors_temp4diff)
 )
+
 # Statistischer Fehler von Emissivität
 epsilon_stat_error = np.abs(epsilon / temp4_diff) * error_temp4_diff_stat
 print("epsilon")
