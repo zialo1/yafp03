@@ -106,7 +106,7 @@ class StatDatapoint: # generates the statistical descriptions on the fly
             return np.array([xi - yi for xi, yi in zip(self, other)])
 
         def __add__(self, other):
-            return np.array([xi - yi for xi, yi in zip(self, other)])
+            return np.array([xi + yi for xi, yi in zip(self, other)])
 
         def __mul__(self, other):
             return np.array([xi * other for xi in self])
