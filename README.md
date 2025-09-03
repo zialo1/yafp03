@@ -1,5 +1,4 @@
-purpose
-=======
+# purpose
 
 python script to produce diagrams for a report.
 input are measurements of temperatures.
@@ -10,15 +9,15 @@ in the code the instance of the class is called stdata.
 each stdata dataset has +/-/** operations. always resulting in np.ndarray results.
 data types: the data is stored in lists of np.float64 types.
 
-usage of sdataset class:
-========================
+## usage of sdataset class:
 
 stdata.append(bb_temp_K[start:end],
                   tleft_in_K[start:end], tright_in_K[start:end], tleft_out_K[start:end])
                   
 temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # ** gives np.array
 
-hint:
-=====
+## other
+### hint:
+
 show_plot varianle. 
 the figures are saved but the display can be suppressed by entering 0 in the string
