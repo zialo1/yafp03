@@ -12,7 +12,7 @@ from code_old import error_temp4_diff_stat
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
 
-show_plots = "001111100000111100" # 5 plots not shown but saved
+show_plots = "11111" # 5 plots not shown but saved
 
 def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
     # Load the CSV file, skipping the header and using comma as delimiter
@@ -96,7 +96,11 @@ if eval(show_plots[1]):
     plt.show()
 
 # PLOT 3- Mittelwerte
-class stat_datapoint: # generates the statistical descriptions on the fly
+
+# Statistical description of data points
+# data is stored in an extended class of list that refers to np.array for the operators + - * / **
+
+class StatDatapoint: # generates the statistical descriptions on the fly
     class innerlist(list): # hybrid of list and np.array; (-,*,**) forces np.array
         def __sub__(self, other):
             return np.array([xi - yi for xi, yi in zip(self, other)])
@@ -110,23 +114,28 @@ class stat_datapoint: # generates the statistical descriptions on the fly
         def __pow__(self, other):
             return np.array([xi ** other for xi in self])
 
+        def __truediv__(self, other):
+            return np.array([xi / yi for xi, yi in zip(self, other)])
+
     def __init__(self):
         self.avg = self.innerlist()
         self.std = self.innerlist()
         self.stderr = self.innerlist()
 
+# managing the three lists for the statistical description, add one value for each 
     def append(self,aslice:np.ndarray): # add 3 np.float64 to the innerlist
         self.avg.append(aslice.mean())
         self.std.append(aslice.std(ddof=1))
         self.stderr.append(self.std[-1] / np.sqrt(len(aslice)))
 
-class sdatasets: # data class - append interface to np.ndarray
+
+class SDatasets: # data class - append interface to np.ndarray
     def __init__(self):
-        self.bb = stat_datapoint() # a list that calls np.array for the *,**,- operators
-        self.iwalls = stat_datapoint()
-        self.iwall_left = stat_datapoint()
-        self.iwall_right = stat_datapoint()
-        self.owall = stat_datapoint()
+        self.bb = StatDatapoint() # a list that calls np.array for the *,**,- operators
+        self.iwalls = StatDatapoint()
+        self.iwall_left = StatDatapoint()
+        self.iwall_right = StatDatapoint()
+        self.owall = StatDatapoint()
 
     def append(self,bb:np.ndarray,ileft:np.ndarray, iright:np.ndarray, outer:np.ndarray):
         self.bb.append(bb)
@@ -135,7 +144,7 @@ class sdatasets: # data class - append interface to np.ndarray
         self.iwall_right.append(iright)
         self.iwalls.append((ileft+iright)/2)
 
-stdata=sdatasets() # a class for data statistical descriptions
+stdata=SDatasets() # a class for data statistical descriptions
 
 # Statistische Fehler: Standardabweichung / sqrt(n)
 n_points = 20
