@@ -4,9 +4,9 @@ import matplotlib.dates as mdates
 from datetime import datetime, date
 import matplotlib.pyplot as plt
 
-from code_old import P_eff_error
-from code_old import errors_temp4diff
-from code_old import error_temp4_diff_stat
+from code_old import P_eff_error # soon to be discarded
+from code_old import errors_temp4diff # soon to be discarded
+from code_old import error_temp4_diff_stat # soon to be discarded
 
 # Import the data from the May21YA csv file
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
