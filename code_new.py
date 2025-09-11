@@ -12,7 +12,7 @@ from code_old import error_temp4_diff_stat # soon to be discarded
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
 
-show_plots = "11111" # 5 plots not shown but saved
+show_plots = "0000011111" # 5 plots not shown but saved
 
 def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
     # Load the CSV file, skipping the header and using comma as delimiter
@@ -71,7 +71,7 @@ if eval(show_plots[0]):
 t_error = 0.1 # K
 L_error = 0.0002 # m
 curr_error = 0.005 # A
-epsilon = 1
+epsilon1 = 1
 A_hp = 1899.4e-6 # m^2
 true_sigma = 5.670374419e-8
 voltages = np.array([4, 5, 6, 7, 8, 9])
@@ -174,9 +174,11 @@ pv_factor = np.float64(
 P_loss = pv_factor * delta_T
 P_eff = voltages * currents - P_loss
 
-radiated_power = P_eff / (epsilon * A_hp)
+radiated_power = P_eff / (epsilon1 * A_hp)
 # Temperatur-Differenz
 temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # ** gives np.array
+
+
 # Fehlerrechnung
 
 # Fehler von T^4 Differenz (systematisch)
@@ -190,17 +192,38 @@ temp4_diff = stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4 # ** gives np.array
 sigma_calc = radiated_power / temp4_diff
 # Systematischer Fehler von
 
-nenner=(stdata.bb.avg**4 - stdata.iwalls.avg**4)
+statfehlerwalls = 0.5*np.sqrt(stdata.iwall_left.std**2+stdata.iwall_right.std**2)
+d=epsilon1 * A_hp * ( stdata.bb.avg ** 4 - stdata.iwalls.avg ** 4)
+n=4 * ( voltages * currents - P_loss)
 
-err_sys = np.abs(1/A_hp/epsilon)/nenner * (
-    0.01 *np.abs(currents) + (
-    0.05 *np.abs(voltages)) + (
-    0.4 *np.abs(stdata.bb.avg**3 * P_eff/ nenner)) + (
-    0.4 * np.abs(stdata.iwalls.avg**3 *P_eff / nenner)))
 
-# Statistischer Fehler von
+statfehler = n*(stdata.bb.avg ** 3 * stdata.bb.std + stdata.iwalls.avg ** 3 * statfehlerwalls)/d/d
+
+print(statfehlerwalls,d,n)
+print("RESULTAT STAT FEHLER",statfehler)
+volt_sys = 0.01
+curr_sys = 0.1
+temp_sys = 0.1
+
+sysfehler = 0
+sysfehler += np.abs(voltages/d) * curr_sys 
+sysfehler += np.abs(currents/d) * volt_sys
+sysfehler += np.abs(n/d) * temp_sys * (stdata.bb.avg**3 + stdata.iwalls.avg**3)
+
+quit()
+
+
+#err_sys = np.abs(1/A_hp/epsilon1)/nenner * (
+#    0.01 *np.abs(currents) + (
+#    0.05 *np.abs(voltages)) + (
+#    0.4 *np.abs(stdata.bb.avg**3 * P_eff/ nenner)) + (
+#    0.4 * np.abs(stdata.iwalls.avg**3 *P_eff / nenner)))
+
+# Statistischer Fehler von Sigma berechnen
+
+
 err_stat = np.sqrt(stdata.bb.std**2 *stdata.bb.avg**6 + stdata.iwalls.std**2 *stdata.iwalls.avg**6
-                   ) * np.abs(4* P_eff)/A_hp/epsilon/(stdata.bb.avg**4 - stdata.iwalls.avg**4)**2
+                   ) * np.abs(4* P_eff)/A_hp/epsilon1/(stdata.bb.avg**4 - stdata.iwalls.avg**4)**2
 #sigma_stat_error = np.abs(sigma_calc / temp4_diff) * error_temp4_diff_stat
 sigma_error =err_sys
 sigma_stat_error = err_stat
@@ -210,6 +233,7 @@ print("sigma_sys")
 print(sigma_error)
 print("sigma_stat")
 print(sigma_stat_error)
+
 # Emissivität
 epsilon = P_eff / (A_hp * true_sigma * temp4_diff)
 # Systematischer Fehler von Emissivität
