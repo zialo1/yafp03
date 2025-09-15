@@ -126,7 +126,7 @@ radiated_power = P_eff / (epsilon * A_hp)
 temp4_diff = avg_bb_temps**4 - averages_left_right_in**4
 # Fehlerrechnung
 PV_error = 0.00943 * delta_T + 0.5874 * L_error * delta_T
-P_eff_error = np.abs(voltages) * curr_error + PV_error
+#P_eff_error = np.abs(voltages) * curr_error + PV_error
 error_radiated_power = P_eff_error / (epsilon * A_hp)
 # Fehler von T^4 Differenz (systematisch)
 errors_temp4diff = np.sqrt(

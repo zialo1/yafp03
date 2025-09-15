@@ -4,15 +4,9 @@ import matplotlib.dates as mdates
 from datetime import datetime, date
 import matplotlib.pyplot as plt
 
-from code_old import P_eff_error # soon to be discarded
-from code_old import errors_temp4diff # soon to be discarded
-from code_old import error_temp4_diff_stat # soon to be discarded
-
 # Import the data from the May21YA csv file
 file_path = r"C:\Users\yanni\OneDrive\Desktop\Praktikum_Ph\May21YA.csv"
 file_path = r"yannik.csv"
-
-show_plots = "0000011111" # 5 plots not shown but saved
 
 def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
     # Load the CSV file, skipping the header and using comma as delimiter
@@ -35,7 +29,28 @@ def load_csv2np(fname)->tuple[list[datetime],np.ndarray,np.ndarray,np.ndarray,np
     offset=np.float64(273.15)
     return time_dt,bb_temp+offset, tleft_in+offset, tright_in+offset, tleft_out+offset
 
-#show_plots = "11111" # shows all plots
+# just for alex not important
+# install pyarraow if you want the data stored in a parquet file
+def save2parquet(data1,data2,data3,afname="sigma_err"):
+    try:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        ndarray_table = pa.table(
+            {
+                "voltages":data1,
+                "sigma\\_errsys": data2,
+                "sigma\\_errsta": data3,
+                #"Z": ndarray[:, 2],
+                #"Amp": ndarray[:, 3],
+                #"Ang": ndarray[:, 4],
+            }
+        )
+        pq.write_table(ndarray_table, f"{afname}.parquet")
+    except ImportError:
+       print("pyarrow is required to save data in Parquet format. skip saving")
+
+
+
 time_dt, bb_temp_K, tleft_in_K, tright_in_K, tleft_out_K = load_csv2np(file_path)
 
 # PLOT 1 - Alle Temperaturen über Zeit
@@ -64,8 +79,7 @@ plt.grid()
 plt.tight_layout()
 # Save the plot to a file
 plt.savefig('temperature_measurements_over_time.png')
-if eval(show_plots[0]):
-    plt.show()
+plt.show()
 
 # PLOT 2 - Konstanten
 t_error = 0.1 # K
@@ -92,8 +106,7 @@ plt.xlabel('Zeit (HH:MM:SS)')
 plt.ylabel('Schwarzkörper-Temperatur (K)')
 #plt.title('Black Body Temperature with Time Stamps')
 plt.legend()
-if eval(show_plots[1]):
-    plt.show()
+plt.show()
 
 # PLOT 3- Mittelwerte
 
@@ -209,7 +222,9 @@ sysfehler = 0
 sysfehler += np.abs(voltages/d) * curr_sys 
 sysfehler += np.abs(currents/d) * volt_sys
 sysfehler += np.abs(n/d) * temp_sys * (stdata.bb.avg**3 + stdata.iwalls.avg**3)
+print("RESULTAT SYS FEHLER",sysfehler)
 
+save2parquet(voltages,sysfehler,statfehler)
 quit()
 
 
@@ -220,6 +235,12 @@ quit()
 #    0.4 * np.abs(stdata.iwalls.avg**3 *P_eff / nenner)))
 
 # Statistischer Fehler von Sigma berechnen
+
+# Fehler von T^4 Differenz (systematisch)
+#errors_temp4diff = np.sqrt(
+#4 * (np.abs(avg_bb_temps**3) * t_error + np.abs(averages_left_right_in**3) * t_error))
+# Fehler von T^4 Differenz (statistisch)
+#error_temp4_diff_stat = 4 * avg_bb_temps**3 * bb_std_err + 4 * averages_left_right_in**3 * env_std_err
 
 
 err_stat = np.sqrt(stdata.bb.std**2 *stdata.bb.avg**6 + stdata.iwalls.std**2 *stdata.iwalls.avg**6
@@ -233,6 +254,9 @@ print("sigma_sys")
 print(sigma_error)
 print("sigma_stat")
 print(sigma_stat_error)
+
+#PV_error = 0.00943 * delta_T + 0.5874 * L_error * delta_T
+#P_eff_error = np.abs(voltages) * curr_error + PV_error
 
 # Emissivität
 epsilon = P_eff / (A_hp * true_sigma * temp4_diff)
@@ -266,8 +290,7 @@ plt.ylabel("Normalisierte Strahlungsleistung [W/m²]")
 plt.grid()
 plt.legend()
 plt.tight_layout()
-if eval(show_plots[2]):
-    plt.show()
+plt.show()
 
 # Plot 4: Berechnete über T_BB
 plt.figure(figsize=(10, 6))
@@ -277,8 +300,7 @@ plt.xlabel("Schwarzkörpertemperatur [K]")
 plt.ylabel(" [W/m²·K]")
 plt.grid()
 plt.tight_layout()
-if eval(show_plots[3]):
-    plt.show()
+plt.show()
 
 # Plot: Emissivität über T_BB
 plt.figure(figsize=(10, 6))
@@ -288,6 +310,5 @@ plt.xlabel("Schwarzkörpertemperatur (K)")
 plt.ylabel("Emissivität ")
 plt.grid()
 plt.tight_layout()
-if eval(show_plots[4]):
-    plt.show()
+plt.show()
 
